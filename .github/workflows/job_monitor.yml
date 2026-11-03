@@ -1,0 +1,51 @@
+name: Job monitor
+
+on:
+  schedule:
+    # Hourly at minute 23 (UTC). GitHub runs schedules on a best-effort basis and the top of the
+    # hour is its busiest time, so an off-peak minute reduces delays. Runs can still be late or skipped.
+    - cron: "23 * * * *"
+  workflow_dispatch: {}  # "Run workflow" button for manual runs
+
+# Never run two collections at once (a slow run must finish before the next starts).
+concurrency:
+  group: job-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Cache the semantic similarity model (~30 MB)
+        id: model-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/huggingface
+          key: hf-minishlab-potion-base-8M-v1
+
+      - name: Collect, filter, score, verify and send alerts
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Use the cached model without contacting HuggingFace once it is cached.
+          HF_HUB_OFFLINE: ${{ steps.model-cache.outputs.cache-hit == 'true' && '1' || '0' }}
+          HF_HUB_DISABLE_TELEMETRY: "1"
+        run: python main.py

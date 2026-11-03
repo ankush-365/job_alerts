@@ -1,0 +1,305 @@
+# Job search preferences. Edit freely; the next pipeline run re-evaluates every job.
+# Term lists are matched case-insensitively on whole words ("ai" matches "AI Engineer", not "Chennai").
+
+candidate:
+  graduation_year: 2027
+  home_city: Ahmedabad
+
+titles:
+  # A title containing any of these is an AI/ML role.
+  ai_terms:
+    - machine learning
+    - ml
+    - ai
+    - artificial intelligence
+    - genai
+    - gen ai
+    - generative ai
+    - llm
+    - llms
+    - nlp
+    - natural language
+    - computer vision
+    - cv engineer   # bare "cv" also means cardiovascular / curriculum vitae
+    - vision
+    - deep learning
+    - applied scientist
+    - mlops
+    - perception
+    - agentic
+    - rag
+    - multimodal
+    - speech
+    - foundation model
+    - foundational models
+    - evals
+    - model evaluation
+    - agent engineer
+    - agents engineer
+  # Always rejected, even with an AI term (seniority or non-engineering).
+  reject_terms:
+    - senior
+    - sr
+    - staff
+    - principal
+    - lead
+    - manager
+    - director
+    - head
+    - vp
+    - vice president
+    - chief
+    - architect
+    - sales
+    - account executive
+    - marketing
+    - recruiter
+    - recruiting
+    - talent
+    - legal
+    - counsel
+    - finance
+    - accountant
+    - accounting
+    - people partner
+    - customer success
+    - designer
+    - product manager
+    - business development
+    - partnerships
+    - go to market
+    - gtm
+    - strategy
+    - ii   # level suffixes: "Data Scientist III"
+    - iii
+    - iv
+    - frontend   # a frontend role on an AI product is still a frontend role
+    - front end
+  # Engineering roles outside AI/ML: rejected unless the title also has an AI term.
+  non_ai_engineering_terms:
+    - backend
+    - back end
+    - full stack
+    - fullstack
+    - devops
+    - sre
+    - site reliability
+    - data engineer
+    - qa
+    - quality assurance
+    - test
+    - ios
+    - android
+    - mobile
+    - embedded
+    - firmware
+    - security
+    - network
+    - salesforce
+    - support engineer
+  # Generic titles (common at AI startups): kept only if the description is clearly AI/ML.
+  # "research engineer" / "data scientist" are here too: they can be biology or product analytics.
+  generic_engineering_terms:
+    - research engineer
+    - data scientist
+    - software engineer
+    - software developer
+    - founding engineer
+    - member of technical staff
+    - mts
+    - research scientist
+    - engineer
+    - developer
+    - sde
+    - deployment engineer
+    - intern
+    - internship
+    - new grad
+    - graduate
+  min_ai_terms_in_description_for_generic_titles: 3
+
+# Distinct terms counted in descriptions (also the base for skill matching in Phase 5).
+description_ai_terms:
+  - machine learning
+  - deep learning
+  - llm
+  - llms
+  - large language model
+  - rag
+  - retrieval augmented
+  - embeddings
+  - vector database
+  - vector search
+  - langchain
+  - langgraph
+  - pytorch
+  - tensorflow
+  - hugging face
+  - huggingface
+  - transformers
+  - fine-tuning
+  - fine tuning
+  - computer vision
+  - object detection
+  - yolo
+  - opencv
+  - nlp
+  - generative ai
+  - ai agents
+  - agentic
+  - prompt engineering
+  - neural network
+  - neural networks
+
+experience:
+  max_required_years: 2  # reject if the job clearly requires more
+  reject_if_unknown: false  # most listings don't state it; keep them
+
+location:
+  india_terms:
+    - india
+    - bengaluru
+    - bangalore
+    - mumbai
+    - delhi
+    - new delhi
+    - ncr
+    - gurgaon
+    - gurugram
+    - noida
+    - hyderabad
+    - pune
+    - chennai
+    - kolkata
+    - ahmedabad
+    - gandhinagar
+    - gujarat
+    - jaipur
+    - kochi
+    - indore
+    - chandigarh
+    - coimbatore
+    - thiruvananthapuram
+  # Remote roles open to these regions are acceptable from India.
+  remote_ok_terms: [india, apac, asia, worldwide, global, anywhere, international]
+  # Remote roles limited to these regions are rejected (unless India is also listed).
+  remote_restricted_terms:
+    - us
+    - usa
+    - united states
+    - canada
+    - eu
+    - europe
+    - uk
+    - united kingdom
+    - latam
+    - americas
+    - emea
+    - north america
+    - germany
+    - france
+  # Jobs outside India: reject | allow_if_visa_sponsored | allow
+  #   allow_if_visa_sponsored: sponsorship stated -> keep; explicitly unavailable -> reject;
+  #   not stated -> abroad_sponsorship_unknown (review = daily digest only, or reject)
+  onsite_abroad: allow_if_visa_sponsored
+  abroad_sponsorship_unknown: review
+  reject_if_unknown: false
+
+salary:
+  # Used for scoring in Phase 5. Undisclosed salary is never a reason to reject.
+  preferred_min_inr_per_year: 450000
+
+employment:
+  # Known types outside this list are rejected; an unstated type is kept.
+  allowed_types: [full-time, internship, contract]
+
+posting:
+  max_age_days: 30
+  # deprioritize: older jobs are kept but flagged and scored lower (company boards keep long-running
+  #   openings live, so an old posting date there does not mean the job is closed).
+  # reject: drop jobs older than max_age_days.
+  when_older: reject  # user choice (2026-11-03): skip openings posted more than max_age_days ago
+  prioritize_new_jobs: true  # used by scoring (Phase 5)
+
+notifications:  # used from Phase 5-7
+  minimum_relevance_score: 60
+  notify_needs_review: true  # verification status NEEDS_REVIEW (Phase 6)
+  notify_suspicious: false
+  location_review_jobs: digest  # jobs abroad with unknown sponsorship: digest | alert | never
+  daily_digest: true
+  digest_hour: 20  # the first run after 20:00 (timezone below) sends the day's digest
+  timezone: Asia/Kolkata
+  max_alerts_per_run: 10  # cap per hourly run; extra jobs wait for the next run
+  digest_max_jobs: 15
+
+# ---------------------------------------------------------------------------
+# Relevance scoring (Phase 5). No LLM: weighted rules + semantic similarity.
+# ---------------------------------------------------------------------------
+profile:
+  # Compared with each job description by a small local embedding model. Keep it about your work, not you.
+  summary: >-
+    AI/ML engineering student (B.E. in AI and ML, graduating 2027) and AI/ML intern.
+    Real-time computer vision for CCTV video analytics: YOLO and RT-DETR object detection, ByteTrack
+    multi-object tracking, person re-identification, pose estimation and behavior analysis on RTSP
+    video streams. Semantic video search with embeddings, vector search, MongoDB and LLMs.
+    Generative AI and LLM applications: retrieval augmented generation (RAG) with LangChain,
+    ChromaDB vector databases and embeddings, LLM-based evaluation pipelines, resume screening and
+    candidate ranking, AI agents and automation. Python, PyTorch, TensorFlow, scikit-learn, NLP,
+    time-series forecasting, Streamlit and Docker.
+  # weight 3 = used in real work/projects, 2 = working knowledge, 1 = familiar / interested.
+  skills:
+    - {name: Python, weight: 1}  # on nearly every listing, so it barely separates good from bad matches
+    - {name: Computer Vision, weight: 3, aliases: [computer vision, machine vision, video analytics]}
+    - {name: Object Detection, weight: 3, aliases: [object detection, yolo, rt-detr, detr]}
+    - {name: Object Tracking, weight: 3, aliases: [object tracking, multi-object tracking, bytetrack, deepsort, object tracker]}
+    - {name: Re-identification, weight: 3, aliases: [re-identification, reidentification, reid, re-id]}
+    - {name: Pose Estimation, weight: 2, aliases: [pose estimation, keypoint detection]}
+    - {name: Video Streams, weight: 2, aliases: [rtsp, video streams, video streaming, cctv, surveillance]}
+    - {name: RAG, weight: 3, aliases: [rag, retrieval augmented, retrieval-augmented]}
+    - {name: LLMs, weight: 3, aliases: [llm, llms, large language model, large language models]}
+    - {name: LangChain, weight: 3}
+    - {name: Embeddings, weight: 3, aliases: [embeddings, embedding models, semantic search, semantic similarity]}
+    - {name: Vector Databases, weight: 3, aliases: [vector database, vector databases, vector db, vector search, chromadb, chroma, faiss, pinecone, weaviate, qdrant, milvus, pgvector]}
+    - {name: LLM APIs, weight: 2, aliases: [openai api, llm api, llm apis, groq, gemini, anthropic, claude api]}
+    - {name: AI Agents, weight: 2, aliases: [ai agents, ai agent, agentic, llm agents, langgraph, tool calling, function calling]}
+    - {name: Prompt Engineering, weight: 2, aliases: [prompt engineering, prompting]}
+    - {name: Model Evaluation, weight: 2, aliases: [model evaluation, evals, evaluation pipelines, llm evaluation]}
+    - {name: NLP, weight: 2, aliases: [nlp, natural language processing, text classification, tf-idf]}
+    - {name: PyTorch, weight: 2}
+    - {name: TensorFlow, weight: 2}
+    - {name: Scikit-learn, weight: 2, aliases: [scikit-learn, sklearn]}
+    - {name: Deep Learning, weight: 2, aliases: [deep learning, neural networks, neural network]}
+    - {name: Hugging Face, weight: 2, aliases: [hugging face, huggingface, transformers]}
+    - {name: MongoDB, weight: 2}
+    - {name: Time Series, weight: 1, aliases: [time series, time-series, forecasting]}
+    - {name: Docker, weight: 1}
+    - {name: Streamlit, weight: 1}
+    - {name: FastAPI, weight: 1}
+    - {name: OpenCV, weight: 1}
+    - {name: LangGraph, weight: 1}
+    - {name: Git, weight: 1, aliases: [git, github]}
+    - {name: JavaScript, weight: 1}
+  # Technologies often asked for that are not in your profile; shown as "missing skills".
+  watch_for_missing:
+    [kubernetes, spark, java, golang, rust, c++, scala, aws, gcp, azure, cuda, triton, tensorrt, ray, kafka,
+     airflow, sql, typescript, react, terraform, distributed training, reinforcement learning, mlflow, jax]
+
+scoring:
+  # Component weights (sum to 100). If semantic similarity is unavailable its weight is spread over the rest.
+  weights: {skills: 30, semantic: 20, title: 15, experience: 15, location: 10, salary: 5, recency: 5}
+  skills_for_full_score: 15  # sum of matched skill weights that earns the full skills component
+  semantic:
+    enabled: true
+    model: minishlab/potion-base-8M
+    similarity_floor: 0.25  # cosine at or below this scores 0
+    similarity_ceiling: 0.65  # cosine at or above this scores full
+  penalties:
+    phd_required: 15
+    other_graduation_years: 10
+    senior_pay_band: 10  # pay range far above entry level suggests a senior role
+    experience_preferred_above_limit: 5
+  senior_pay_band_min_inr_per_year: 15000000  # e.g. $175K+ when converted
+  tiers: {high: 80, moderate: 60}
+  # Approximate conversion rates to INR for salary comparison only. Update occasionally.
+  inr_per_unit: {INR: 1, USD: 85, EUR: 92, GBP: 108, CAD: 62, AUD: 56, SGD: 64, AED: 23, SAR: 23, KRW: 0.062,
+                 JPY: 0.57, CHF: 97, BRL: 15, MXN: 4.6, HKD: 11, NZD: 51}

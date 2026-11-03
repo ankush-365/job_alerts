@@ -1,0 +1,72 @@
+# Which sources to poll and how politely. Edit freely; no code changes needed.
+
+http:
+  timeout_seconds: 20
+  max_retries: 3
+  min_seconds_between_requests_per_host: 2.0
+  # Official public job-board APIs: 1 request per second each is well within polite use.
+  per_host_seconds:
+    api.ashbyhq.com: 1.0
+    boards-api.greenhouse.io: 1.0
+    api.lever.co: 1.0
+
+yc:
+  enabled: true
+  # Public pages under https://www.ycombinator.com/jobs (each shows up to ~40 postings).
+  role_paths:
+    - /jobs/role/software-engineer/machine-learning
+    - /jobs/role/software-engineer/india
+    - /jobs/role/software-engineer/remote
+    - /jobs/role/science
+  # Detail pages (description, exact posting date) are fetched only for jobs not seen before.
+  max_detail_fetches_per_run: 30
+
+ats:
+  enabled: true
+  # Company boards confirmed to respond with open jobs on 2026-11-03.
+  # Format: {ats: greenhouse|lever|ashby, slug: <board name>, company: <display name>, website: <optional>}
+  boards:
+    # India-based or India-hiring
+    - {ats: ashby, slug: sarvam, company: Sarvam AI}
+    - {ats: greenhouse, slug: observeai, company: Observe.AI}
+    - {ats: greenhouse, slug: sigmoid, company: Sigmoid}
+    - {ats: greenhouse, slug: groww, company: Groww}
+    - {ats: greenhouse, slug: druva, company: Druva}
+    - {ats: lever, slug: meesho, company: Meesho}
+    - {ats: lever, slug: cred, company: CRED}
+    - {ats: lever, slug: mindtickle, company: Mindtickle}
+    - {ats: ashby, slug: atlan, company: Atlan}
+    # AI companies (many roles are US/EU-only; filters handle location later)
+    - {ats: ashby, slug: cohere, company: Cohere}
+    - {ats: ashby, slug: perplexity, company: Perplexity}
+    - {ats: greenhouse, slug: scaleai, company: Scale AI}
+    - {ats: greenhouse, slug: databricks, company: Databricks}
+    - {ats: ashby, slug: deepgram, company: Deepgram}
+    - {ats: greenhouse, slug: assemblyai, company: AssemblyAI}
+    - {ats: ashby, slug: elevenlabs, company: ElevenLabs}
+    - {ats: ashby, slug: replit, company: Replit}
+    - {ats: ashby, slug: anyscale, company: Anyscale}
+    - {ats: greenhouse, slug: togetherai, company: Together AI}
+    - {ats: ashby, slug: modal, company: Modal}
+    - {ats: ashby, slug: pinecone, company: Pinecone}
+    - {ats: ashby, slug: weaviate, company: Weaviate}
+    - {ats: ashby, slug: langchain, company: LangChain}
+    - {ats: ashby, slug: llamaindex, company: LlamaIndex}
+    - {ats: ashby, slug: runway, company: Runway}
+    - {ats: ashby, slug: character, company: Character.AI}
+    - {ats: ashby, slug: harvey, company: Harvey}
+    - {ats: ashby, slug: cursor, company: Cursor}
+    - {ats: ashby, slug: sierra, company: Sierra}
+    - {ats: ashby, slug: decagon, company: Decagon}
+    - {ats: ashby, slug: writer, company: Writer}
+    - {ats: greenhouse, slug: typeface, company: Typeface}
+    - {ats: ashby, slug: roboflow, company: Roboflow}
+    - {ats: greenhouse, slug: snorkelai, company: Snorkel AI}
+    - {ats: greenhouse, slug: labelbox, company: Labelbox}
+    - {ats: lever, slug: superannotate, company: SuperAnnotate}
+    - {ats: ashby, slug: encord, company: Encord}
+  # Look for the Greenhouse/Lever/Ashby board of YC companies with relevant jobs, so their YC listings
+  # can be confirmed on the company's own board. Each check costs up to ~15 small requests, once per company.
+  discover_for_yc: true
+  max_discoveries_per_run: 5
+  rediscover_after_days: 30

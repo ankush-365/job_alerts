@@ -1,0 +1,19 @@
+# Secrets: never commit. Covers .env and editor backups like .env.save, .env.save.1, .env.bak
+.env
+.env.*
+!.env.example
+
+# Local data (the production database lives in Neon)
+data/
+*.db
+*.sqlite3
+
+# Personal documents
+resume*
+*.pdf
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
